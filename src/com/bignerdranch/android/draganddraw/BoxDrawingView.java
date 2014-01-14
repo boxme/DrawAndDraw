@@ -9,8 +9,9 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -30,7 +31,7 @@ public class BoxDrawingView extends View {
 	public BoxDrawingView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		
-		// Paint the boxes a nice semitransparent red (ARGB)
+		// Paint the boxes a nice semi-transparent red (ARGB)
 		mBoxPaint = new Paint();
 		mBoxPaint.setColor(0x22ff0000);									
 		
@@ -43,26 +44,22 @@ public class BoxDrawingView extends View {
 	public boolean onTouchEvent(MotionEvent event) {					//MotionEvent is a class that describes the touch event
 		PointF curr = new PointF(event.getX(), event.getY());			//PointF is android graphics
 		
-		Log.i(TAG, "Received event at x=" + curr.x + ", y=" + curr.y + ":");
+//		Log.i(TAG, "Received event at x=" + curr.x + ", y=" + curr.y + ":");
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
-			Log.i(TAG, " ACTION_DOWN");
 			mCurrentBox = new Box(curr);								//Reset drawing state
 			mBoxes.add(mCurrentBox);
 			break;
 		case MotionEvent.ACTION_MOVE:
-			Log.i(TAG, " ACTION_MOVE");
 			if (mCurrentBox != null) {
 				mCurrentBox.setCurrent(curr);							//Updates as the fingers move around the screen
 				invalidate();											//Forces BoxDrawingView to redraw itself so the users can see
 			}
 			break;
 		case MotionEvent.ACTION_UP:
-			Log.i(TAG, " ACTION_UP");
 			mCurrentBox = null;											//User's fingers leave the screen
 			break;
 		case MotionEvent.ACTION_CANCEL:
-			Log.i(TAG, " ACTION_CANCEL");								//Touch is cancelled
 			mCurrentBox = null;
 			break;
 		}
@@ -82,5 +79,24 @@ public class BoxDrawingView extends View {
 			
 			canvas.drawRect(left, top, right, bottom, mBoxPaint);					
 		}
+	}
+	
+	@Override
+	public Parcelable onSaveInstanceState() {									//Saving state of custom view
+		Bundle bundle = new Bundle();
+		bundle.putParcelable("instanceState", super.onSaveInstanceState());
+		bundle.putSerializable("ArrayListBox", mBoxes);
+		return bundle;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public void onRestoreInstanceState(Parcelable state) {
+		if (state instanceof Bundle) {
+			Bundle bundle = (Bundle) state;
+			this.mBoxes = (ArrayList<Box>) bundle.getSerializable("ArrayListBox");
+			state = bundle.getParcelable("instanceState");
+		}
+		super.onRestoreInstanceState(state);
 	}
 }
