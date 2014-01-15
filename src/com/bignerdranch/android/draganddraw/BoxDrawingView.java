@@ -40,24 +40,33 @@ public class BoxDrawingView extends View {
 		mBackgroundPaint.setColor(0xfff8efe0);
 	}
 	
-	//Called everytime a touch event happens
+	//Called every time a touch event happens
+	@Override
 	public boolean onTouchEvent(MotionEvent event) {					//MotionEvent is a class that describes the touch event
-		PointF curr = new PointF(event.getX(), event.getY());			//PointF is android graphics
+		PointF curr = new PointF(event.getX(0), event.getY(0));			//PointF is android graphics
 		
-//		Log.i(TAG, "Received event at x=" + curr.x + ", y=" + curr.y + ":");
-		switch (event.getAction()) {
+		switch (event.getActionMasked()) {								//getActionMasked() is for multi-touch
 		case MotionEvent.ACTION_DOWN:
 			mCurrentBox = new Box(curr);								//Reset drawing state
 			mBoxes.add(mCurrentBox);
 			break;
 		case MotionEvent.ACTION_MOVE:
-			if (mCurrentBox != null) {
+			if (mCurrentBox != null && mCurrentBox.getAngle() == 0) {
 				mCurrentBox.setCurrent(curr);							//Updates as the fingers move around the screen
 				invalidate();											//Forces BoxDrawingView to redraw itself so the users can see
+			} else {
+				mCurrentBox.resetOrigin(event.getX(1), event.getY(1));
+				invalidate();
 			}
 			break;
 		case MotionEvent.ACTION_UP:
 			mCurrentBox = null;											//User's fingers leave the screen
+			break;
+		case MotionEvent.ACTION_POINTER_DOWN:							//Secondary pointer
+			mCurrentBox.setAngle(event.getX(1), event.getY(1));
+			break;
+		case MotionEvent.ACTION_POINTER_UP:								//Secondary pointer 
+			mCurrentBox.reset();
 			break;
 		case MotionEvent.ACTION_CANCEL:
 			mCurrentBox = null;
