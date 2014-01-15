@@ -79,14 +79,17 @@ public class BoxDrawingView extends View {
 	protected void onDraw(Canvas canvas) {
 		//Fill the background
 		canvas.drawPaint(mBackgroundPaint);
-		
+
 		for (Box box : mBoxes) {												//Draw every box 
 			float left = Math.min(box.getOrigin().x, box.getCurrent().x);
 			float right = Math.max(box.getOrigin().x, box.getCurrent().x);
 			float top = Math.min(box.getOrigin().y, box.getCurrent().y);
 			float bottom = Math.max(box.getOrigin().y, box.getCurrent().y);
 			
-			canvas.drawRect(left, top, right, bottom, mBoxPaint);					
+			canvas.save(Canvas.MATRIX_SAVE_FLAG);
+			canvas.rotate((float) box.getDiffAngle(), box.getCurrent().x, box.getCurrent().y);	//Change matrix
+			canvas.drawRect(left, top, right, bottom, mBoxPaint);
+			canvas.restore();													//Restore original matrix config before save()
 		}
 	}
 	
